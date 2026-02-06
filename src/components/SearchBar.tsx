@@ -1,11 +1,17 @@
 'use client'
-
 import { useState } from 'react';
+
+interface ItunesArtist {
+    artistId: number;
+    artistName: string;
+    primaryGenreName: string;
+    artistLinkUrl: string;
+}
 
 export default function SearchBar() {
 
     const [search, setSearch] = useState("")
-    const [results, setResults] = useState(Array)
+    const [results, setResults] = useState<ItunesArtist[]>([])
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setSearch(e.target.value)
@@ -15,7 +21,7 @@ export default function SearchBar() {
     async function handleSearch(e: React.FormEvent) {
         e.preventDefault() // Stop the text in the search bar from disappearing on page refresh (default form behavior)
         console.log("Performing Search for:", search)
-        let url = `https://itunes.apple.com/search?term=${search}&entity=musicArtist`;
+        const url = `https://itunes.apple.com/search?term=${search}&entity=musicArtist`;
         try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -39,7 +45,7 @@ export default function SearchBar() {
                     type="text" 
                     id="artist_search" 
                     className="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow xs placeholder:text-body" 
-                    placeholder="Search for Artists" required 
+                    placeholder="Search for Artists..." 
                     value={search}
                     onChange={handleChange}
                 />
