@@ -1,9 +1,9 @@
 import { pool } from '@/lib/db';
-import SearchBar from '@/components/SearchBar'
 
 export default async function Home() {
   const userId = 1;
 
+  // need to delete this
   const query = `
     SELECT artists.name, artists.external_data
     FROM artists
@@ -14,8 +14,7 @@ export default async function Home() {
   const { rows:followedArtists } = await pool.query(query, [userId]);
 
   return (
-    <main className="p-10">
-      <div><SearchBar></SearchBar></div>
+    <main className="p-10"> Home Page
       <h1 className="text-3xl font-bold mb-6 text-blue-600">My Following List</h1>
 
       <div className="grid gap-4">

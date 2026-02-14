@@ -1,17 +1,14 @@
 'use client'
 import { useState } from 'react';
+import { ItunesArtist } from '@/lib/types';
 
-interface ItunesArtist {
-    artistId: number;
-    artistName: string;
-    primaryGenreName: string;
-    artistLinkUrl: string;
+interface SearchBarProps {
+    onResultsFound: (results: ItunesArtist[]) => void;
 }
 
-export default function SearchBar() {
+export default function SearchBar({ onResultsFound }: SearchBarProps) {
 
     const [search, setSearch] = useState("")
-    const [results, setResults] = useState<ItunesArtist[]>([])
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setSearch(e.target.value)
@@ -29,7 +26,7 @@ export default function SearchBar() {
             }
 
             const data = await response.json();
-            setResults(data.results);
+            onResultsFound(data.results);
 
             console.log("Data:", data);
 
