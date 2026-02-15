@@ -1,36 +1,46 @@
 import { ItunesArtist } from '@/lib/types';
 
-function handleFollow(artist: ItunesArtist){
+async function handleFollow(artist: ItunesArtist){
     console.log("Attemping to follow:", artist.artistName)
+    const response = await fetch('/api/follow',{
+        method: "POST",
+        body: JSON.stringify( {artist} )
+    });
+
+    if (response.ok){
+        console.log("Followed:", artist.artistName)
+    } else {
+        console.log("Error following:", artist.artistName)
+    }
 }
 
 export default function SearchResults({ results }: { results: ItunesArtist[] }) {
     return (
-        <div className="mt-8">
-            <p className="mb-4 text-gray-600">{results.length} artists found</p>
-            {/* Grid Container */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {results.map((artist) => (
-                    /* Card for each artist */
-                    <div 
-                        key={artist.artistId} 
-                        className="border p-4 rounded-lg shadow-sm bg-white hover:shadow-md transition-shadow"
-                    >
-                        <div> 
-                            <h3 className="font-bold text-lg text-black">{artist.artistName}</h3>
-                            <p  className="text-sm text-gray-500">{artist.primaryGenreName}</p>
-                        </div>
-
-                        <button
-                            onClick={() => handleFollow(artist)}
-                            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
-                        >
-                            Follow
-                        </button>
-                    </div>
-                ))}
-
+    <div className="flex flex-col gap-3">
+        {results.map((artist) => (
+            <div
+            key={artist.artistId}
+            className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+            >
+            {/* Left: Artist card */}
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-300" />
+                <div>
+                    <h3 className="font-semibold text-black">{artist.artistName}</h3>
+                    <p className="text-sm text-gray-500">{artist.primaryGenreName}</p>
+                </div>
             </div>
-        </div>
+
+            {/* Right: Button */}
+            <button
+                onClick={() => handleFollow(artist)}
+                className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md"
+            >
+                Follow
+            </button>
+            </div>
+        ))}
+    </div>
+
     )
 }
