@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
             ON CONFLICT (user_id, artist_id) DO NOTHING;
         `;
         
-        // ONCE I DO AUTH, UPDATE THE HARDCODED VALUE
+        // TEMP: ONCE I DO AUTH, UPDATE THE HARDCODED VALUE
         await pool.query(followQuery, [1, internalArtistId]);
 
         // Step 2: Insert artist's releases into DB
@@ -91,12 +91,13 @@ export async function POST(request: NextRequest) {
             const type = determineType(title, release.trackCount);
             const explicitness = release.collectionExplicitness === 'explicit';
             const releaseDate = new Date(release.releaseDate);
+            const displayArtistName = release.artistName.toString();
             const artworkUrl = release.artworkUrl100;
             const releaseLink = release.collectionViewUrl;
             const externalData = JSON.stringify(release);
             
             const releaseQuery = `
-                INSERT INTO releases (itunes_id, title, track_count, type, explicitness, release_date, artwork_url, release_url, external_data)
+                INSERT INTO releases (itunes_id, title, track_count, type, explicitness, release_date, display_artist_name, artwork_url, release_url, external_data)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ON CONFLICT (itunes_id) 
                 DO UPDATE SET last_updated = NOW()
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
                 type,
                 explicitness,
                 releaseDate,
+                displayArtistName,
                 artworkUrl,
                 releaseLink,
                 externalData
