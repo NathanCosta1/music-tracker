@@ -27,6 +27,7 @@ interface ItunesCollection {
 
 type ItunesResult = ItunesArtist | ItunesCollection;
 
+// API calls everything "Album" so rough estimate of type based on track number (sadly lose granularity w/ EP designation)
 function determineType(title: string, trackCount: number): string {
     const lowerTitle = title.toLowerCase();
     if (lowerTitle.includes('- ep')) return 'ep';
@@ -84,7 +85,6 @@ export async function POST(request: NextRequest) {
 
         // Loop through each release to perform steps 2 & 3
         for (const release of artistReleases){
-            // API calls everything "Album" so rough estimate of type based on track number (sadly lose granularity w/ EP designation)
             const releaseItunesId = release.collectionId.toString();
             const title = release.collectionName.toString();
             const trackCount = release.trackCount
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
             
             const releaseQuery = `
                 INSERT INTO releases (itunes_id, title, track_count, type, explicitness, release_date, display_artist_name, artwork_url, release_url, external_data)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 ON CONFLICT (itunes_id) 
                 DO UPDATE SET last_updated = NOW()
                 RETURNING id;

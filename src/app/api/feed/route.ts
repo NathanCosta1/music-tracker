@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const feedQuery = `
             SELECT DISTINCT R.*
-            FROM releases R, follows F, artist_releases AR
-            WHERE F.id = $1
+            FROM users U, releases R, follows F, artist_releases AR
+            WHERE U.id = $1
                 AND F.artist_id = AR.artist_id
                 AND AR.release_id = R.id
-            ORDER BY release_date DESC;
+            ORDER BY release_date DESC
+            LIMIT 50;
         `;
         
         // TEMP: ONCE I DO AUTH, UPDATE THE HARDCODED VALUE

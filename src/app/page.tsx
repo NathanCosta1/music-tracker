@@ -8,6 +8,9 @@ export default async function Home() {
       <li>
         <Link href="/search">Search</Link>
       </li>
+      <li>
+        <Link href="/feed">Feed</Link>
+      </li>
     </ul>
   );
 }
