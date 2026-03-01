@@ -1,31 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
-
-interface ItunesArtist {
-    wrapperType: 'artist';
-    artistName: string;
-    artistId: number;
-}
-
-interface ItunesCollection {
-    wrapperType: 'collection';
-    collectionType: string;
-    artistId: number;
-    collectionId: number;
-    artistName: string;
-    collectionName: string;
-    collectionViewUrl: string;
-    collectionExplicitness: string,
-    artworkUrl100: string;
-    collectionPrice?: number;   
-    trackCount: number;
-    releaseDate: string;        
-    primaryGenreName: string;   
-    country: string;
-    currency: string;
-}
-
-type ItunesResult = ItunesArtist | ItunesCollection;
+import { ItunesResult, ItunesCollection } from '@/lib/types';
+import { createClient } from '@/lib/supabase/server';
 
 // API calls everything "Album" so rough estimate of type based on track number (sadly lose granularity w/ EP designation)
 function determineType(title: string, trackCount: number): string {
@@ -37,6 +13,14 @@ function determineType(title: string, trackCount: number): string {
 
 export async function POST(request: NextRequest) {
     try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const userId = user.id; 
         const { artist } = await request.json();
         const artistItunesId = artist.artistId.toString();
         const name = artist.artistName;
@@ -64,8 +48,7 @@ export async function POST(request: NextRequest) {
             ON CONFLICT (user_id, artist_id) DO NOTHING;
         `;
         
-        // TEMP: ONCE I DO AUTH, UPDATE THE HARDCODED VALUE
-        await pool.query(followQuery, [1, internalArtistId]);
+        await pool.query(followQuery, [userId, internalArtistId]);
 
         // Step 2: Insert artist's releases into DB
         const releases_url = `https://itunes.apple.com/lookup?id=${artistItunesId}&entity=album`;

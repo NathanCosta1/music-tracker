@@ -1,8 +1,17 @@
 import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
     try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const userId = user.id; 
         const feedQuery = `
             SELECT DISTINCT R.*
             FROM users U, releases R, follows F, artist_releases AR
@@ -13,8 +22,7 @@ export async function GET() {
             LIMIT 50;
         `;
         
-        // TEMP: ONCE I DO AUTH, UPDATE THE HARDCODED VALUE
-        const { rows } = await pool.query(feedQuery, [1])
+        const { rows } = await pool.query(feedQuery, [userId])
 
         return NextResponse.json({ success: true, feed: rows});
 
