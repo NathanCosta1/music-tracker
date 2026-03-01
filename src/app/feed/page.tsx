@@ -48,7 +48,15 @@ export default function FeedPage() {
 
     return (
         <main className="max-w-4xl mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-8">Release Timeline</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Release Timeline</h1>
+                <Link 
+                    href="/" 
+                    className="bg-blue-500 border px-4 py-2"
+                >
+                    Home
+                </Link>
+            </div>
             <div className="flex gap-4 mb-8 border-b border-gray-700">
                 <Link 
                     href="/feed?tab=past"
