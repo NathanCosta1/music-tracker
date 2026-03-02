@@ -1,44 +1,53 @@
+'use client'
+
 import { ItunesArtist } from '@/lib/types';
+import { useState } from 'react';
 
-async function handleFollow(artist: ItunesArtist){
-    console.log("Attemping to follow:", artist.artistName)
-    const response = await fetch('/api/follow',{
-        method: "POST",
-        body: JSON.stringify( {artist} )
-    });
+export default function SearchResults({ artist, initialFollowed }: { artist: ItunesArtist, initialFollowed: boolean }) {
+    const[isFollowing, setIsFollowing] = useState(initialFollowed);
 
-    if (response.ok){
-        console.log("Followed:", artist.artistName)
-    } else {
-        console.log("Error following:", artist.artistName)
+
+    async function toggleFollow(){
+        let method;
+        if (isFollowing){
+            method = "DELETE";
+            console.log("Attemping to unfollow:", artist.artistName);
+
+        } else {
+            method = "POST";
+            console.log("Attemping to follow:", artist.artistName);  
+        }
+
+        const response = await fetch('/api/follow',{
+            method: method,
+            body: JSON.stringify( {artist} )
+        });
+
+        if (response.ok){
+            console.log("Success");
+            setIsFollowing(!isFollowing);
+        } else {
+            console.log("Error");
+        }
     }
-}
 
-export default function SearchResults({ artist }: { artist: ItunesArtist }) {
     return (
-    <div className="flex flex-col gap-3">
-        <div
-        key={artist.artistId}
-        className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition"
-        >
-        {/* Left: Artist card */}
-        <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-300" />
-            <div>
-                <h3 className="font-semibold text-black">{artist.artistName}</h3>
-                <p className="text-sm text-gray-500">{artist.primaryGenreName}</p>
+        <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-300" />
+                <div>
+                    <h3 className="font-semibold text-black">{artist.artistName}</h3>
+                </div>
             </div>
-        </div>
 
-        {/* Right: Button */}
-        <button
-            onClick={() => handleFollow(artist)}
-            className="px-4 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md"
-        >
-            Follow
-        </button>
+            <button
+                onClick={toggleFollow}
+                className={`px-4 py-1.5 text-sm rounded-md text-white ${
+                    isFollowing ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+                }`}
+            >
+                {isFollowing ? "Unfollow" : "Follow"}
+            </button>
         </div>
-    </div>
-
     )
 }

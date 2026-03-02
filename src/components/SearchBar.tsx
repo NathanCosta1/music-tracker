@@ -1,14 +1,12 @@
 'use client'
+
 import { useState } from 'react';
 import { ItunesArtist } from '@/lib/types';
+import SearchCard from './SearchCard';
 
-interface SearchBarProps {
-    onResultsFound: (results: ItunesArtist[]) => void;
-}
-
-export default function SearchBar({ onResultsFound }: SearchBarProps) {
-
+export default function SearchBar({ initialFollowedIds }: { initialFollowedIds: string[] }) {
     const [search, setSearch] = useState("")
+    const [results, setResults] = useState<ItunesArtist[]>([]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setSearch(e.target.value)
@@ -26,7 +24,7 @@ export default function SearchBar({ onResultsFound }: SearchBarProps) {
             }
 
             const data = await response.json();
-            onResultsFound(data.results);
+            setResults(data.results);
 
             console.log("Data:", data);
 
@@ -37,6 +35,7 @@ export default function SearchBar({ onResultsFound }: SearchBarProps) {
 
     return (
         <div>
+            {/* Search Bar */}
             <form onSubmit={handleSearch}>
                 <input 
                     type="text" 
@@ -48,6 +47,20 @@ export default function SearchBar({ onResultsFound }: SearchBarProps) {
                 />
                 <button type="submit" className="mt-2 bg-blue-600 text-white p-2 rounded">Search</button>
             </form>
+
+            {/* Results (Array of SearchCards) */}
+            <div className='gap-3 flex flex-col'>
+               {results.map((artist) => {
+                   const isFollowed = initialFollowedIds.includes(artist.artistId.toString());
+                   return (
+                       <SearchCard 
+                           key={artist.artistId} 
+                           artist={artist} 
+                           initialFollowed={isFollowed} 
+                       />  
+                   )
+               })}          
+            </div>
         </div>
 
     )

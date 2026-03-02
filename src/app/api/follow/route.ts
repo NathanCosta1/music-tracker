@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
 import { ItunesResult, ItunesCollection } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 // API calls everything "Album" so rough estimate of type based on track number (sadly lose granularity w/ EP designation)
 function determineType(title: string, trackCount: number): string {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !user) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            redirect('/login');
         }
 
         const userId = user.id; 
@@ -125,4 +126,39 @@ export async function POST(request: NextRequest) {
 
     }
 
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        const { artist } = await request.json();
+        const artistItunesId = artist.artistId.toString();
+
+        const userId = user.id; 
+        const unfollowQuery = `
+            DELETE FROM follows 
+            WHERE user_id = $1 
+                AND artist_id = (SELECT id FROM artists WHERE itunes_id = $2);
+        `;
+        
+        const { rows } = await pool.query(unfollowQuery, [userId, artistItunesId])
+
+        return NextResponse.json({ success: true, feed: rows});
+
+    } catch (error: unknown) {
+        console.error("Error:", error);
+
+        const message = error instanceof Error ? error.message : "An unknown error occured.";
+
+        return NextResponse.json(
+            { error: "Failed to delete artist", details: message }, 
+            { status: 500 }   
+        );
+
+    }
 }
